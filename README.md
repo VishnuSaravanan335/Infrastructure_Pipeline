@@ -61,3 +61,40 @@ The infrastructure is broken down into four distinct, reusable Terraform modules
 - `alb_dns_name`: The DNS name of the Application Load Balancer to access the application.
 - `dynamodb_table_name`: The name of the provisioned DynamoDB table.
 - `s3_bucket_name`: The name of the provisioned S3 bucket.
+
+## 🎉 Deployment Results
+
+### Terraform Outputs
+After a successful deployment, the infrastructure outputs the following values:
+
+```text
+[ec2-user@ip-172-31-110-9 ~]$ terraform output
+alb_dns_name = "app-lb-1701439727.us-east-1.elb.amazonaws.com"
+dynamodb_table_name = "app-db"
+s3_bucket_name = "demo-app-storage-vishnu-2026"
+```
+
+### Terraform State
+The infrastructure configuration provisions all the required resources securely:
+
+```text
+[ec2-user@ip-172-31-110-9 ~]$ terraform state list
+aws_autoscaling_group.app_asg
+aws_dynamodb_table.app_db
+aws_instance.app_vm
+aws_internet_gateway.igw
+aws_launch_template.app_lt
+aws_lb.app_lb
+aws_lb_listener.app_listener
+aws_lb_target_group.app_tg
+aws_route_table.public_rt
+aws_route_table_association.public_assoc_a
+aws_route_table_association.public_assoc_b
+aws_s3_bucket.app_bucket
+aws_s3_bucket_ownership_controls.app_bucket_owner
+aws_s3_bucket_public_access_block.app_bucket_block
+aws_security_group.app_sg
+aws_subnet.public_subnet_a
+aws_subnet.public_subnet_b
+aws_vpc.main_vpc
+```
