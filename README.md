@@ -14,7 +14,7 @@ The infrastructure is broken down into four distinct, reusable Terraform modules
 2. **Compute Module (`modules/compute`)**
    - Deploys an Application Load Balancer (ALB) to distribute incoming traffic.
    - Sets up an Auto Scaling Group (ASG) using Launch Templates for dynamic scaling.
-   - Configures Security Groups to allow SSH, HTTP, and HTTPS traffic.
+   - Configures restricted Security Groups to ensure secure traffic flow between the ALB and instances.
 
 3. **Database Module (`modules/database`)**
    - Provisions a DynamoDB table (`app-db`) with `PAY_PER_REQUEST` billing for flexible and cost-effective NoSQL storage.
@@ -22,6 +22,35 @@ The infrastructure is broken down into four distinct, reusable Terraform modules
 4. **Storage Module (`modules/storage`)**
    - Creates a secure Amazon S3 bucket.
    - Enforces strict ownership controls and blocks all public access to ensure maximum data security.
+
+### 📊 Architecture Flowchart
+
+```mermaid
+graph TD
+    subgraph AWS Cloud
+        Internet((Internet)) --> IGW[Internet Gateway]
+        IGW --> ALB[Application Load Balancer]
+        
+        subgraph VPC [Virtual Private Cloud 10.0.0.0/16]
+            ALB -->|HTTP 80| ASG[Auto Scaling Group]
+            
+            subgraph Public Subnets
+                ASG --> EC2_1[EC2 Instance AZ1]
+                ASG --> EC2_2[EC2 Instance AZ2]
+            ]
+        end
+        
+        EC2_1 --> DDB[(DynamoDB app-db)]
+        EC2_2 --> DDB
+        
+        EC2_1 --> S3[(Amazon S3 Bucket)]
+        EC2_2 --> S3
+    end
+    
+    style Internet fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style VPC fill:#e8f4f8,stroke:#0052cc,stroke-width:2px
+    style Public Subnets fill:#f0f8ff,stroke:#4169e1,stroke-width:1px,stroke-dasharray: 5 5
+```
 
 ## ⚙️ Prerequisites
 
@@ -32,8 +61,8 @@ The infrastructure is broken down into four distinct, reusable Terraform modules
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/VishnuSaravanan335/Infrasture_pipeline.git
-   cd Infrasture_pipeline
+   git clone https://github.com/VishnuSaravanan335/Infrastructure_Pipeline.git
+   cd Infrastructure_Pipeline
    ```
 
 2. **Initialize Terraform:**
@@ -55,7 +84,8 @@ The infrastructure is broken down into four distinct, reusable Terraform modules
 ## 🔐 Security & Best Practices
 - **Modularization**: Code is strictly separated by resource type, ensuring high reusability and isolated blast radiuses.
 - **State Management**: Terraform state is configured to be securely backed by an S3 backend (`demo-app-deploy-335-vishnu-2026`) with state locking.
-- **Parameterization**: Hardcoded sensitive credentials and personal identifiers have been abstracted into variables for secure configuration.
+- **Parameterization**: Hardcoded sensitive credentials, availability zones, and instance types have been abstracted into variables for secure and flexible configuration.
+- **Least Privilege**: Security groups strictly control traffic between the Application Load Balancer and compute instances.
 
 ## 📤 Outputs
 - `alb_dns_name`: The DNS name of the Application Load Balancer to access the application.
@@ -64,18 +94,8 @@ The infrastructure is broken down into four distinct, reusable Terraform modules
 
 ## 🎉 Deployment Results
 
-### Terraform Outputs
-After a successful deployment, the infrastructure outputs the following values:
-
-```text
-[ec2-user@ip-172-31-110-9 ~]$ terraform output
-alb_dns_name = "app-lb-1701439727.us-east-1.elb.amazonaws.com"
-dynamodb_table_name = "app-db"
-s3_bucket_name = "demo-app-storage-vishnu-2026"
-```
-
-### Terraform State
-The infrastructure configuration provisions all the required resources securely:
+### Terraform State Verification
+The infrastructure configuration successfully provisions the following resources:
 
 ```text
 [ec2-user@ip-172-31-110-9 ~]$ terraform state list
@@ -97,4 +117,31 @@ aws_security_group.app_sg
 aws_subnet.public_subnet_a
 aws_subnet.public_subnet_b
 aws_vpc.main_vpc
+```
+
+### Application & Resource Verification
+
+You can verify the deployment by running the following test commands:
+
+```text
+[ec2-user@ip-172-31-110-9 ~]$ curl http://$(terraform output -raw alb_dns_name)
+
+[ec2-user@ip-172-31-110-9 ~]$ aws s3 ls s3://$(terraform output -raw s3_bucket_name)
+
+[ec2-user@ip-172-31-110-9 ~]$ aws dynamodb list-tables --region us-east-1
+{
+    "TableNames": [
+        "app-db",
+        "terraform-locks"
+    ]
+}
+```
+
+### Final Infrastructure Outputs
+
+```text
+[ec2-user@ip-172-31-110-9 ~]$ terraform output
+alb_dns_name = "app-lb-1701439727.us-east-1.elb.amazonaws.com"
+dynamodb_table_name = "app-db"
+s3_bucket_name = "demo-app-storage-vishnu-2026"
 ```
