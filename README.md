@@ -1,27 +1,29 @@
-# AWS Infrastructure Pipeline 🚀
+<div align="center">
+  <h1>🚀 AWS Infrastructure Pipeline</h1>
+  
+  <p>
+    <b>A highly available, secure, and scalable AWS infrastructure orchestrated with Terraform.</b>
+  </p>
+  
+  [![Terraform](https://img.shields.io/badge/Terraform-1.0.0+-623CE4.svg?style=for-the-badge&logo=terraform)](https://www.terraform.io/)
+  [![AWS](https://img.shields.io/badge/AWS-Cloud-232F3E.svg?style=for-the-badge&logo=amazon-aws)](https://aws.amazon.com/)
+  [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](#)
+</div>
 
-This repository contains a modular and highly effective Terraform configuration to provision a robust AWS infrastructure pipeline. It deploys a secure, scalable, and highly available architecture on AWS.
+---
 
-## 🏗️ Architecture Overview
+## 📖 Overview
 
-The infrastructure is broken down into four distinct, reusable Terraform modules:
+This repository contains a modular, production-ready Terraform configuration designed to provision a robust AWS infrastructure pipeline. By strictly decoupling resources into specialized modules, the architecture achieves maximum reusability, minimizes the blast radius, and adheres to the principle of least privilege.
 
-1. **Network Module (`modules/network`)**
-   - Provisions a Virtual Private Cloud (VPC) with a `10.0.0.0/16` CIDR block.
-   - Sets up multiple public subnets across availability zones for high availability.
-   - Configures an Internet Gateway and Route Tables for external internet access.
+## 🏗️ Architecture Design
 
-2. **Compute Module (`modules/compute`)**
-   - Deploys an Application Load Balancer (ALB) to distribute incoming traffic.
-   - Sets up an Auto Scaling Group (ASG) using Launch Templates for dynamic scaling.
-   - Configures restricted Security Groups to ensure secure traffic flow between the ALB and instances.
+The infrastructure is strategically broken down into four distinct Terraform modules:
 
-3. **Database Module (`modules/database`)**
-   - Provisions a DynamoDB table (`app-db`) with `PAY_PER_REQUEST` billing for flexible and cost-effective NoSQL storage.
-
-4. **Storage Module (`modules/storage`)**
-   - Creates a secure Amazon S3 bucket.
-   - Enforces strict ownership controls and blocks all public access to ensure maximum data security.
+- **`modules/network`**: Provisions a Virtual Private Cloud (VPC) with a `10.0.0.0/16` CIDR block, multiple public subnets across availability zones, an Internet Gateway, and highly available routing.
+- **`modules/compute`**: Deploys an Application Load Balancer (ALB) and an Auto Scaling Group (ASG) using Launch Templates. Implements strict, layered Security Groups for zero-trust internal traffic.
+- **`modules/database`**: Provisions a DynamoDB table (`app-db`) utilizing `PAY_PER_REQUEST` billing for flexible and cost-effective NoSQL storage.
+- **`modules/storage`**: Creates a secure Amazon S3 bucket, enforcing strict ownership controls and blocking all public access to guarantee maximum data security.
 
 ### 📊 Architecture Flowchart
 
@@ -52,50 +54,61 @@ graph TD
     style Public Subnets fill:#f0f8ff,stroke:#4169e1,stroke-width:1px,stroke-dasharray: 5 5
 ```
 
-## ⚙️ Prerequisites
+---
 
-- **Terraform** v1.0.0 or higher.
-- **AWS CLI** configured with appropriate IAM credentials.
+## 🔐 Security & Best Practices
+
+- **Modularization**: Code is strictly separated by resource type, ensuring high reusability and isolated fault domains.
+- **State Management**: Terraform state is configured to be securely backed by an S3 backend (`demo-app-deploy-335-vishnu-2026`) with DynamoDB state locking.
+- **Parameterization**: Hardcoded sensitive credentials, availability zones, and instance types have been abstracted into variables for secure and flexible configuration.
+- **Least Privilege**: Security groups strictly control traffic, ensuring compute instances are only accessible via the Application Load Balancer.
+
+---
 
 ## 🚀 Getting Started
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/VishnuSaravanan335/Infrastructure_Pipeline.git
-   cd Infrastructure_Pipeline
-   ```
+### 1. Prerequisites
+- **Terraform** v1.0.0 or higher.
+- **AWS CLI** configured with appropriate IAM credentials.
 
-2. **Initialize Terraform:**
-   This will download the necessary provider plugins and initialize the backend.
-   ```bash
-   terraform init
-   ```
+### 2. Deployment
 
-3. **Review the deployment plan:**
-   ```bash
-   terraform plan
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/VishnuSaravanan335/Infrastructure_Pipeline.git
+cd Infrastructure_Pipeline
 
-4. **Apply the configuration:**
-   ```bash
-   terraform apply
-   ```
+# Initialize Terraform (downloads providers & configures backend)
+terraform init
 
-## 🔐 Security & Best Practices
-- **Modularization**: Code is strictly separated by resource type, ensuring high reusability and isolated blast radiuses.
-- **State Management**: Terraform state is configured to be securely backed by an S3 backend (`demo-app-deploy-335-vishnu-2026`) with state locking.
-- **Parameterization**: Hardcoded sensitive credentials, availability zones, and instance types have been abstracted into variables for secure and flexible configuration.
-- **Least Privilege**: Security groups strictly control traffic between the Application Load Balancer and compute instances.
+# Review the deployment plan
+terraform plan
 
-## 📤 Outputs
+# Apply the configuration
+terraform apply -auto-approve
+```
+
+---
+
+## 🎉 Deployment Results
+
+Once deployed, the infrastructure successfully provisions all resources and provides the necessary output variables. 
+
+### Output Summary
 - `alb_dns_name`: The DNS name of the Application Load Balancer to access the application.
 - `dynamodb_table_name`: The name of the provisioned DynamoDB table.
 - `s3_bucket_name`: The name of the provisioned S3 bucket.
 
-## 🎉 Deployment Results
+### 📸 Execution Result
 
-### Terraform State Verification
-The infrastructure configuration successfully provisions the following resources:
+Below is a snapshot of the successful deployment verification from the terminal, showing the provisioned state, database creation, and output confirmation:
+
+*(Please upload the terminal result image and save it as `docs/result.png` to display it below)*
+
+![Deployment Verification Result](docs/result.png)
+
+<details>
+<summary><b>View Raw Terminal Verification Logs</b></summary>
 
 ```text
 [ec2-user@ip-172-31-110-9 ~]$ terraform state list
@@ -117,13 +130,7 @@ aws_security_group.app_sg
 aws_subnet.public_subnet_a
 aws_subnet.public_subnet_b
 aws_vpc.main_vpc
-```
 
-### Application & Resource Verification
-
-You can verify the deployment by running the following test commands:
-
-```text
 [ec2-user@ip-172-31-110-9 ~]$ curl http://$(terraform output -raw alb_dns_name)
 
 [ec2-user@ip-172-31-110-9 ~]$ aws s3 ls s3://$(terraform output -raw s3_bucket_name)
@@ -135,13 +142,16 @@ You can verify the deployment by running the following test commands:
         "terraform-locks"
     ]
 }
-```
 
-### Final Infrastructure Outputs
-
-```text
 [ec2-user@ip-172-31-110-9 ~]$ terraform output
 alb_dns_name = "app-lb-1701439727.us-east-1.elb.amazonaws.com"
 dynamodb_table_name = "app-db"
 s3_bucket_name = "demo-app-storage-vishnu-2026"
 ```
+</details>
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ utilizing Terraform & AWS</sub>
+</div>
