@@ -10,3 +10,13 @@ variable "ami_id" {
 variable "key_name" {
   type = string
 }
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+}
+
+variable "common_tags" {
+  description = "Common tags for all resources"
+  type        = map(string)
+}

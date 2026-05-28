@@ -12,15 +12,19 @@ terraform {
 }
 
 module "network" {
-  source = "./modules/network"
+  source      = "./modules/network"
+  azs         = var.azs
+  common_tags = var.common_tags
 }
 
 module "compute" {
-  source     = "./modules/compute"
-  vpc_id     = module.network.vpc_id
-  subnet_ids = module.network.public_subnets
-  ami_id     = var.ami_id
-  key_name   = var.key_name
+  source        = "./modules/compute"
+  vpc_id        = module.network.vpc_id
+  subnet_ids    = module.network.public_subnets
+  ami_id        = var.ami_id
+  key_name      = var.key_name
+  instance_type = var.instance_type
+  common_tags   = var.common_tags
 }
 
 module "database" {

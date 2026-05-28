@@ -27,3 +27,24 @@ variable "s3_bucket_name" {
   type        = string
   default     = "demo-app-storage-vishnu-2026"
 }
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "azs" {
+  description = "Availability zones"
+  type        = list(string)
+  default     = ["us-east-1a", "us-east-1b"]
+}
+
+variable "common_tags" {
+  description = "Common tags for all resources"
+  type        = map(string)
+  default     = {
+    Environment = "Production"
+    Project     = "InfrastructurePipeline"
+  }
+}
