@@ -39,7 +39,7 @@ graph TD
             subgraph Public Subnets
                 ASG --> EC2_1[EC2 Instance AZ1]
                 ASG --> EC2_2[EC2 Instance AZ2]
-            ]
+            end
         end
         
         EC2_1 --> DDB[(DynamoDB app-db)]
@@ -102,10 +102,6 @@ Once deployed, the infrastructure successfully provisions all resources and prov
 ### 📸 Execution Result
 
 Below is a snapshot of the successful deployment verification from the terminal, showing the provisioned state, database creation, and output confirmation:
-
-*(Please upload the terminal result image and save it as `docs/result.png` to display it below)*
-
-![Deployment Verification Result](docs/result.png)
 
 <details>
 <summary><b>View Raw Terminal Verification Logs</b></summary>
